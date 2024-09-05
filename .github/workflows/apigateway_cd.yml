@@ -62,12 +62,12 @@ jobs:
           script: |
             sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
             # 기존 컨테이너와 이미지를 정리
-            sudo docker stop discovery
-            sudo docker rm discovery
+            sudo docker stop apigateway
+            sudo docker rm apigateway
             sudo docker rmi ${{ secrets.DOCKER_REPO }}
             # 새로운 이미지 풀 및 실행
             sudo docker pull ${{ secrets.DOCKER_REPO }}
-            sudo docker run -d --name discovery -p 8761:8761 ${{ secrets.DOCKER_REPO }}
+            sudo docker run -d --name apigateway -p 8761:8761 ${{ secrets.DOCKER_REPO }}
 
       - name: Notify
         uses: actions/github-script@v5
