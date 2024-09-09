@@ -20,7 +20,7 @@ spring:
 #            postLogger: true
       routes:
         - id: user-service
-          uri: lb://USER-SERVICE
+          uri: http://172.31.10.0:8000
           predicates:
             - Path=/user-service/login
             - Method=POST
@@ -28,7 +28,7 @@ spring:
             - RemoveRequestHeader=Cookie
             - RewritePath=/user-service/(?<segment>.*),/$\{segment}
         - id: user-service
-          uri: lb://USER-SERVICE
+          uri: http://172.31.10.0:8000
           predicates:
             - Path=/user-service/users
             - Method=POST
@@ -36,7 +36,7 @@ spring:
             - RemoveRequestHeader=Cookie
             - RewritePath=/user-service/(?<segment>.*),/$\{segment}
         - id: user-service
-          uri: lb://USER-SERVICE
+          uri: http://172.31.10.0:8000
           predicates:
             - Path=/user-service/**
             - Method=GET
