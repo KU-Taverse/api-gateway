@@ -6,10 +6,18 @@ eureka:
     fetch-registry: true
     service-url:
       defaultZone: http://172.31.13.241:8761/eureka
+  instance:
+    prefer-ip-address: true
+    ip-address: 172.31.13.241
+    instance-id: ${spring.application.name}:${server.port}
+
 spring:
   application:
     name: apigateway-service
   cloud:
+    discovery:
+      client:
+        service-id: ${spring.application.name}
     gateway:
       # default filter는 모든 라우터에 실행되는거. 그렇기에 현재는 필요없고 나중에 사용할 예정
 #      default-filters:
@@ -20,7 +28,7 @@ spring:
 #            postLogger: true
       routes:
         - id: user-service
-          uri: http://172.31.10.0:8000
+          uri: lb://USER-SERVICE
           predicates:
             - Path=/user-service/login
             - Method=POST
@@ -28,7 +36,7 @@ spring:
             - RemoveRequestHeader=Cookie
             - RewritePath=/user-service/(?<segment>.*),/$\{segment}
         - id: user-service
-          uri: http://172.31.10.0:8000
+          uri: lb://USER-SERVICE
           predicates:
             - Path=/user-service/users
             - Method=POST
@@ -36,7 +44,7 @@ spring:
             - RemoveRequestHeader=Cookie
             - RewritePath=/user-service/(?<segment>.*),/$\{segment}
         - id: user-service
-          uri: http://172.31.10.0:8000
+          uri: lb://USER-SERVICE
           predicates:
             - Path=/user-service/**
             - Method=GET
