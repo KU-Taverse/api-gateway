@@ -5,10 +5,10 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://172.31.13.241:8761/eureka
+      defaultZone: http://localhost:8761/eureka
   instance:
     prefer-ip-address: true
-    ip-address: 172.31.13.241
+    ip-address: localhost
     instance-id: ${spring.application.name}:${server.port}
 
 spring:
@@ -30,7 +30,7 @@ spring:
         - id: user-service
           uri: lb://USER-SERVICE
           predicates:
-            - Path=/user-service/login
+            - Path=/user-service/**
             - Method=POST
           filters:
             - RemoveRequestHeader=Cookie
@@ -58,6 +58,12 @@ spring:
             - Path=/game-service/**
           filters:
             - RewritePath=/game-service/(?<segment>.*),/$\{segment}
+        - id: dis-game-service
+          uri: lb://DIS-GAME-SERVICE
+          predicates:
+            - Path=/dis-game-service/**
+          filters:
+            - RewritePath=/dis-game-service/(?<segment>.*),/$\{segment}
     config:
       enabled: false
 
