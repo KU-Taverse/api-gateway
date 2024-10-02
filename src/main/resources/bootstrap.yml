@@ -1,0 +1,10 @@
+spring:
+  config:
+    activate:
+      on-profile: prod # prod 프로파일에서만 활성화
+  cloud:
+    config:
+      uri: http://172.31.10.0:8888
+      name: apigateway-service
+      profile: prod
+      enabled: true
