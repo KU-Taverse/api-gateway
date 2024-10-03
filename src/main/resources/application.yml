@@ -1,17 +1,7 @@
-server:
-  port: 9000
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-  instance:
-    prefer-ip-address: true
-    ip-address: localhost
-    instance-id: ${spring.application.name}:${server.port}
-
 spring:
+  config:
+    activate:
+      on-profile: local
   application:
     name: apigateway-service
   cloud:
@@ -79,6 +69,18 @@ spring:
     config:
       enabled: false
 
+server:
+  port: 9000
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true
+    ip-address: localhost
+    instance-id: ${spring.application.name}:${server.port}
 
 token:
   secret: Y2hvcHBhLWRvbnQtYml0ZS1tZS1zcHJpbmctYm9vdC1qd3QtdGVzdC1zZWNyZXQta2V5LWNob3BwYS1kb250LWJpdGUtbWUtc3ByaW5nLWJvb3Qtand0LXRlc3Qtc2VjcmV0LWtleQo=
