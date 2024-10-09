@@ -67,7 +67,7 @@ jobs:
             sudo docker rmi ${{ secrets.DOCKER_REPO }}
             # 새로운 이미지 풀 및 실행
             sudo docker pull ${{ secrets.DOCKER_REPO }}
-            sudo docker run -d --name apigateway -p 9000:9000 ${{ secrets.DOCKER_REPO }}
+            sudo docker run -d --name apigateway -v /var/log/apigateway:/var/log/apigateway -p 9000:9000 ${{ secrets.DOCKER_REPO }}
 
       - name: Notify
         uses: actions/github-script@v5
