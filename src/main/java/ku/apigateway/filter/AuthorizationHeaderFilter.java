@@ -13,6 +13,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.net.URI;
+import java.util.Date;
+
 @Component
 @Slf4j
 public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<AuthorizationHeaderFilter.Config> {
@@ -27,14 +30,12 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
     public GatewayFilter apply(Config config) {
         return ((exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
-            if(!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)){
-                return onError(exchange,"no authorization header", HttpStatus.UNAUTHORIZED);
+            // 쿠키에서 jwtToken을 찾기
+            String jwt = null;
+            if (request.getCookies().containsKey("jwtToken")) {
+                jwt = request.getCookies().getFirst("jwtToken").getValue();
             }
-
-            String authorization = request.getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
-            String jwt = authorization.replace("Bearer","");
-
-            if(!isJwtValid(jwt)){
+            if(jwt == null ||!isJwtValid(jwt)){
                 return onError(exchange,"no valid jwt", HttpStatus.UNAUTHORIZED);
             }
 
@@ -45,17 +46,31 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
     private boolean isJwtValid(String jwt) {
         boolean returnValue = true;
 
-        String subject = null;
-
         try {
-            subject = Jwts.parser().setSigningKey(env.getProperty("token.secret"))
-                    .parseClaimsJws(jwt).getBody()
-                    .getSubject();
-        } catch (Exception ex) {
-            returnValue = false;
-        }
+            // JWT 파싱
+            var claims = Jwts.parser()
+                    .setSigningKey(env.getProperty("token.secret"))
+                    .parseClaimsJws(jwt)
+                    .getBody();
 
-        if(subject == null || subject.isEmpty()){
+            // 만료 여부 확인
+            if (claims.getExpiration().before(new Date())) {
+                returnValue = false;
+            }
+
+            // subject 확인
+            String subject = claims.getSubject();
+            if (subject == null || subject.isEmpty()) {
+                returnValue = false;
+            }
+
+            // status가 ADMIN인지 확인
+            String status = claims.get("status", String.class);
+            if (!"ADMIN".equals(status)) {
+                returnValue = false;
+            }
+        } catch (Exception ex) {
+            //log.error("JWT parsing error: {}", ex.getMessage());
             returnValue = false;
         }
 
@@ -65,9 +80,13 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
     //Mono, Flux -> WebFlux의 개념
     private Mono<Void> onError(ServerWebExchange exchange, String noAuthorizationHeader, HttpStatus httpStatus) {
         ServerHttpResponse response = exchange.getResponse();
-        response.setStatusCode(httpStatus);
+
+        // 리디렉션 설정
+        response.setStatusCode(HttpStatus.FOUND); // 302 Redirect 상태 코드
+        response.getHeaders().setLocation(URI.create("/manager-service/admin/login")); // 리디렉션 경로 설정
 
         return response.setComplete();
+
     }
 
 }
